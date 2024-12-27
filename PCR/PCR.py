@@ -1,3 +1,15 @@
+'''
+TODO:
+- review and test each function
+- stats() needs to be done
+- check with .pdf if everything is done and ready to publish
+- write readme.md file with instructions how to install, setup and use program
+- push to git
+- email
+'''
+
+
+
 import pandas as pd
 import numpy as np
 import sys

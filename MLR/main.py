@@ -11,19 +11,16 @@
     - Q^2 Ex
     - RMSE Ex
     - F
-
-
-TODO
--  
+  
 '''
+import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.linear_model import LinearRegression
 import statsmodels.api as sm
-
-def staty_na_koniec():
-    pass
+from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.model_selection import cross_val_predict
 
 def wykres_Williamsa(X_train, Y_train, X_test, Y_test):
     X_train_with_const = sm.add_constant(X_train)
@@ -45,6 +42,8 @@ def wykres_Williamsa(X_train, Y_train, X_test, Y_test):
     plt.scatter(leverage_train, standardized_residuals_train, label="Zbiór uczący", color='blue')
     plt.scatter(leverage_test, standardized_residuals_test, label="Zbiór walidacyjny", color='red')
     plt.axhline(y=0, color='black', linestyle='--')
+    plt.axhline(y=3, color='red', linestyle='--', label="Granica reszt")
+    plt.axhline(y=-3, color='red', linestyle='--')
     plt.axvline(x=h_limit, color='green', linestyle='--', label=f"Granica dźwigni={h_limit:.3f}")
     plt.xlabel("Dźwignia")
     plt.ylabel("Reszty standaryzowane")
@@ -112,9 +111,10 @@ def rownanie_modelu(X_matrix, Y_vector):
     return model
 
 if __name__=='__main__':
-    path = 'C:\\Users\\szymo\\Desktop\\Szymi studia\\uczenie_maszynowe\\dane_leki.xlsx'
+    path = 'F:\\vs_code_workspace\\uczenie_maszynowe\\dane_leki.xlsx'           # change path to the file
     Y_vector, X_matrix, Y_obs_train, Y_test, X_train, X_test = data_loader(path)
-    #print(corr_matrix(X_train))
+    print(corr_matrix(X_train))
     model = rownanie_modelu(X_train, Y_obs_train)
     wykres_ypred_yobs(model, X_matrix, Y_vector)
     wykres_Williamsa(X_train, Y_obs_train, X_test, Y_test)
+    print(Y_vector.shape[0])

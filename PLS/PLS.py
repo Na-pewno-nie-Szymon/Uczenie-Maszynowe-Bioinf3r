@@ -16,6 +16,18 @@
 5.  Zbudować modele MLR i PRC, powtórzyć dla nich kroki 3 i 4, a następnie
     porównać wyniki uzyskane wszystkimi trzema metodami.
 '''
+
+
+'''
+TODO:
+- check what's done 
+- code review done parts 
+- check and write what need to be done, updated and/or removed acording to .pdf file
+- write readme.md file with instructions how to install, setup and use program
+- push to git
+- send email
+
+'''
 import pandas as pd
 import os
 from sys import argv
