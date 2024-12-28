@@ -43,7 +43,7 @@ def wykres_Williamsa(X_train, Y_train, X_test, Y_test):
     plt.scatter(leverage_test, standardized_residuals_test, label="Zbiór walidacyjny", color='red')
     plt.axhline(y=0, color='black', linestyle='--')
     plt.axhline(y=3, color='red', linestyle='--', label="Granica reszt")
-    plt.axhline(y=-3, color='red', linestyle='--')
+    plt.axhline(y=-3, color='red', linestyle='--')
     plt.axvline(x=h_limit, color='green', linestyle='--', label=f"Granica dźwigni={h_limit:.3f}")
     plt.xlabel("Dźwignia")
     plt.ylabel("Reszty standaryzowane")
@@ -111,7 +111,7 @@ def rownanie_modelu(X_matrix, Y_vector):
     return model
 
 if __name__=='__main__':
-    path = 'F:\\vs_code_workspace\\uczenie_maszynowe\\dane_leki.xlsx'           # change path to the file
+    path = 'data/dane_leki.xlsx'           # change path to the file
     Y_vector, X_matrix, Y_obs_train, Y_test, X_train, X_test = data_loader(path)
     print(corr_matrix(X_train))
     model = rownanie_modelu(X_train, Y_obs_train)
