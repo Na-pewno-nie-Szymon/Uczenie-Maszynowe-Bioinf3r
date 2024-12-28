@@ -144,6 +144,9 @@ if __name__=="__main__":
     '''
     try:
         path = sys.argv[1]
+    except IndexError:
+        path = ''
+    finally:
         if path == '-h' or path == '-help':
             print('to use this program copy this line:')
             print('python3 PCR.py [path to data]')
@@ -156,9 +159,3 @@ if __name__=="__main__":
             rmse_list = RMSEc(X_train, Y_train)
             RMSE_plot(rmse_list)
             MLR(X_train, X_test, Y_train, Y_test)
-    except IndexError:
-        print('for more information use -h or -help flag')
-        print('python3 PCR.py -h        |   python3 PCR.py -help')
-    finally:
-        print(len(sys.argv))
-
