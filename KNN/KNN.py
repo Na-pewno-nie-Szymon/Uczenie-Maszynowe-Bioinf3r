@@ -1,10 +1,7 @@
 '''
 TODO:
-    - check what's done, what need updates and what needs to be done
-    - make a list of this things acording to .pdf file
     - code review of done things
     - write readme.md file with instructions how to install, setup and use program
-    - push to git
     - send email
 '''
 
@@ -12,17 +9,21 @@ TODO:
 TODO:
     - [x]   Describe what n_split is
     - [x]   Update data scaler and preprocessor
-    - []    Describe why n_splits is set to 6
+    - [ ]   Something is wrong with stats
+            r2 and q2 are the same,
+            rmse and rmse_ex are the same.
+            Find bug and fix it    
+    - [skip??]   Describe why n_splits is set to 6
     - [x]   Describe N-neighbors parameter and implement distance into training
     - [x]   Calculate Q2 and RMSEex for normal knn
     - [x]   Calculate R2, RMSE, Q2, RMSEex for model with different destances. Then plot bar chart of diferent destances
-    - []    Przygotuj analizę ważonego modelu KNN oraz oblicz statystyki R2, RMSE, Q2, RMSEex + wykres y_pred od y_true dla ważonego modelu KNN
-    - []    Statystyki R2, RMSE, Q2, RMSEex dla ważonego modelu z różnymi dystansami:
-            - [] Euklides
-            - [] Manhattan
-            - [] Czebyszew
-            - [] Canberra
-            [] Następnie przygotuj wykres słupkowy ze statystykami odległości 
+    - [ ]   Przygotuj analizę ważonego modelu KNN oraz oblicz statystyki R2, RMSE, Q2, RMSEex + wykres y_pred od y_true dla ważonego modelu KNN
+    - [ ]   Statystyki R2, RMSE, Q2, RMSEex dla ważonego modelu z różnymi dystansami:
+            - [ ] Euklides
+            - [ ] Manhattan
+            - [ ] Czebyszew
+            - [ ] Canberra
+            [ ] Następnie przygotuj wykres słupkowy ze statystykami odległości 
 '''
 
 import numpy as np
@@ -46,6 +47,7 @@ def load_data(
     @return data in pandas.DataFrame format 
     '''
     data = pd.read_excel(file_path, sheet_name=sheet_name)
+    print(type(data))
     return data
 
 def std_scaler_and_preprocessor(
@@ -62,12 +64,12 @@ def std_scaler_and_preprocessor(
     '''
     change = (len(wrong_name) == len(new_name)) and len(wrong_name) != 0
 
-    scaler = StandardScaler()
-    matrix = scaler.fit_transform(matrix)
-
     if change:
         columns = dict(zip(wrong_name, new_name))
         matrix = matrix.rename(columns=columns)
+
+    scaler = StandardScaler()
+    matrix = scaler.fit_transform(matrix)
     return matrix
 
 def optimal_Knum_model(
@@ -96,8 +98,7 @@ def optimal_Knum_model(
         raise ValueError(f'Distance metric {distance}, doesn\'t exist!')
 
     if max_k == -1:
-        max_k = X_train.shape[0] -1
-        print(max_k)
+        max_k = int(X_train.shape[0] * 0.75)
 
     cv = KFold(n_splits=n_splits, shuffle=True, random_state=1)
     rmse_values: list[float] = []
@@ -121,8 +122,9 @@ def optimal_Knum_model(
             if rmse < lowest_rmse:
                 lowest_rmse = rmse
                 best_model = knn
+                best_k = k
 
-            print(f'n_neighbors: {k},\tRMSE: {rmse}')
+            print(f'n_neighbors: {k}, \tRMSE: {rmse}')
             rmse_values.append(rmse)
             k_values.append(k)
             k += 1
@@ -130,21 +132,21 @@ def optimal_Knum_model(
             print(f'At n_neighbors: {k}, RMSE value was lower than 0 (RMSE={rmse})!')
             break
     
-    optimal_k = np.argmin(rmse_values) + 1
-    
-    if show_fig:
-        plt.figure(figsize=(10, 6))
-        plt.plot(k_values, rmse_values, marker='o', linestyle='--', color='b')
-        plt.xlabel('Neighbors # (k)')
-        plt.ylabel('RMSE')
-        plt.title('RMSE at each neighbor #')
-        plt.xticks(k_values)
-        plt.grid()
-        plt.show()
+    plt.figure(figsize=(10, 6))
+    plt.plot(k_values, rmse_values, marker='o', linestyle='--', color='b')
+    plt.xlabel('Neighbors # (k)')
+    plt.ylabel('RMSE')
+    plt.title(f'{distance} RMSE at each neighbor #')
+    plt.xticks(k_values)
+    plt.grid()
     if save_fig:
-        plt.savefig()
+        plt.savefig(f'./figures/{distance}_KNN_model.png')
+    if show_fig:
+        plt.show()
+    else:
+        plt.pause
 
-    return [optimal_k, best_model]
+    return [best_k, best_model]
 
 def train_knn(
         X_train: pd.DataFrame,
@@ -175,21 +177,26 @@ def train_knn(
     return knn
 
 def stats_(
-        y_true: pd.DataFrame,
-        y_pred: pd.DataFrame
+        y_train_true: pd.DataFrame,
+        y_train_pred: pd.DataFrame,
+        y_val_pred: pd.DataFrame,
+        y_val_true: pd.DataFrame
 ) -> list[float, float, float, float]:
     '''
     ### Function that calculates r_sqared and RMSE for predicted values
-    @param y_true Validation vector
-    @param y_pred Predicted vector
+    @param y_train_true Training true-value vector
+    @param y_train_pred Training pred-value vector
+    @param y_val_true Validation true-value vector
+    @param y_val_pred Validation pred-value vector
     @return R sqared and RMSE values
     '''
-    y_mean = np.mean(y_true)
-
-    RMSE = np.sqrt(mean_squared_error(y_true, y_pred))
-    r2 = r2_score(y_true, y_pred)
-    q2 = 1 - (np.sum((y_true - y_pred)**2) / np.sum((y_true - y_mean)**2))
-    RMSEex = np.sqrt(mean_squared_error(y_true, y_pred))
+    
+    r2 = r2_score(y_train_true, y_train_pred)
+    RMSE = np.sqrt(mean_squared_error(y_train_true, y_train_pred))
+    
+    y_val_mean = np.mean(y_val_true)
+    q2 = 1 - (np.sum((y_val_true - y_val_pred)**2) / np.sum((y_val_true - y_val_mean)**2))
+    RMSEex = np.sqrt(mean_squared_error(y_val_true, y_val_pred))
     return [RMSE, r2, q2, RMSEex]
 
 
@@ -204,20 +211,22 @@ def y_true_pred(
     @param y_pred Predicted vector
     @param save_fig Decides if figure should be saved if current directory
     '''
+    print(y_true.ravel())
 
-    regression = 0
-
+    coef = np.polyfit(y_true.ravel(), y_pred.ravel(), 1)
+    poly1d_fn = np.poly1d(coef) 
+    
     plt.figure(figsize=(8,6))
     plt.scatter(y_true, y_pred, color='blue')
-    plt.plot(y_true, regression, linestyle='--', color='red')
+    plt.plot(y_true, poly1d_fn(y_true), linestyle='--', color='red')
     plt.xlabel('True y values')
     plt.ylabel('Predicted y values')
     plt.grid()
-    plt.show()
 
     if save_fig:
         plt.savefig()
-
+    
+    plt.show()
     return None
 
 def zadanie1(file_path: str) -> None:
@@ -229,21 +238,16 @@ def zadanie1(file_path: str) -> None:
     optimal_k, model = optimal_Knum_model(X_train, y_train)
     print(f'Optimal neighbor #: {optimal_k}')
 
-    y_pred = model.predict(X_test)
+    y_val_pred = model.predict(X_test)
+    y_train_pred = model.predict(X_train)
 
-    _stats = stats_(y_test, y_pred)
+    _stats = stats_(y_train, y_train_pred, y_test, y_val_pred)
     rmse, r2, q2, rmse_ex = _stats[0], _stats[1], _stats[2], _stats[3]
     print(f'R²: {r2:.4f}')
     print(f'RMSE: {rmse:.4f}')
     print(f'Q2: {q2:.4f}')
     print(f'RMSEex: {rmse_ex:.4f}')
-    y_true_pred(y_test, y_pred)
-
-def zadanie2(file_path: str) -> None:
-    X_train = std_scaler_and_preprocessor(load_data(file_path, sheet_name='X_train'))
-    X_test = std_scaler_and_preprocessor(load_data(file_path, sheet_name='X_test'), ['qc'], ['qc-'])
-    y_train = std_scaler_and_preprocessor(load_data(file_path, sheet_name='y_train'))
-    y_test = std_scaler_and_preprocessor(load_data(file_path, sheet_name='y_test'))
+    y_true_pred(y_test, y_val_pred)
 
     possible_distances = ['Euclidean', 'Manhattan', 'Canberra', 'Chebyshev']
     r2 = []
@@ -253,22 +257,23 @@ def zadanie2(file_path: str) -> None:
     optimal_k = []
 
     for dist in possible_distances:
-        optimal_k_, model = optimal_Knum_model(X_train, y_train, distance=dist)
-        y_pred = model.predict(X_test)
+        optimal_k_, model = optimal_Knum_model(X_train, y_train, distance=dist, show_fig=False, save_fig=True)
+        y_val_pred = model.predict(X_test)
+        y_train_pred = model.predict(X_train)
 
-        _stats = stats_(y_test, y_pred)
+        _stats = stats_(y_train, y_train_pred, y_test, y_val_pred)
         r2.append(_stats[1])
         q2.append(_stats[2])
         rmse.append(_stats[0])
         rmse_ex.append(_stats[3])
         optimal_k.append(optimal_k_)
 
-    bar_width = 0.25
+    bar_width = 0.15
     fig = plt.subplots(figsize=(12, 8))
     
     br1 = np.arange(len(r2)) 
     br2 = [x + bar_width for x in br1] 
-    br3 = [x + bar_width for x in br2] 
+    br3 = [x + bar_width + 0.05 for x in br2] 
     br4 = [x + bar_width for x in br3]
 
     plt.bar(br1, r2, color ='r', width = bar_width, 
@@ -277,7 +282,7 @@ def zadanie2(file_path: str) -> None:
             edgecolor ='grey', label ='RMSE') 
     plt.bar(br3, q2, color ='b', width = bar_width, 
             edgecolor ='grey', label ='q2') 
-    plt.bar(br4, rmse_ex, color ='b', width = bar_width, 
+    plt.bar(br4, rmse_ex, color ='pink', width = bar_width, 
             edgecolor ='grey', label ='RMSEex')
     
     plt.xlabel('Distance metric', fontweight ='bold', fontsize = 15) 
@@ -285,8 +290,18 @@ def zadanie2(file_path: str) -> None:
     plt.xticks([r + bar_width for r in range(len(r2))], 
             ['Euclidean', 'Manhattan', 'Canberra', 'Chebyshev'])
     
+    plt.title('Different distance metrics')
     plt.legend()
+    plt.savefig('./figures/diferent_distance_stat_comparisson.png')
     plt.show()
+
+def zadanie2(file_path: str) -> None:
+    X_train = std_scaler_and_preprocessor(load_data(file_path, sheet_name='X_train'))
+    X_test = std_scaler_and_preprocessor(load_data(file_path, sheet_name='X_test'), ['qc'], ['qc-'])
+    y_train = std_scaler_and_preprocessor(load_data(file_path, sheet_name='y_train'))
+    y_test = std_scaler_and_preprocessor(load_data(file_path, sheet_name='y_test'))
+
+    
 
 
 
