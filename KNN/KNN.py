@@ -79,7 +79,8 @@ def optimal_Knum_model(
         n_splits: int = 6,
         show_fig: bool = True,
         save_fig: bool = False, 
-        distance: str = ''
+        distance: str = '',
+        weight: str = 'uniform'
     ) -> list[int, KNeighborsRegressor]:
     '''
     ### Function that finds k parameter that fits the best for the model using KFold
@@ -89,7 +90,8 @@ def optimal_Knum_model(
     @param n_splits number od consecutive folds 
     @param show_fig False for not showing figure 
     @param save_fig Decides if figure will be saved
-    @param distance choose avaliable distance 
+    @param distance choose avaliable distance
+    @param weight Defines weight used to train model 
     @return Returns best fitting k param
     '''
 
@@ -114,7 +116,7 @@ def optimal_Knum_model(
         if distance == '':
             knn = train_knn(X_train, y_train, n_neighbors=k)
         else:
-            knn = train_knn(X_train, y_train, n_neighbors=k, distance=distance)
+            knn = train_knn(X_train, y_train, n_neighbors=k, distance=distance, weight=weight)
         scores = cross_val_score(knn, X_train, y_train, cv=cv, scoring='neg_mean_squared_error')
         rmse = np.sqrt(-scores.mean())
 
@@ -140,7 +142,7 @@ def optimal_Knum_model(
     plt.xticks(k_values)
     plt.grid()
     if save_fig:
-        plt.savefig(f'./figures/{distance}_KNN_model.png')
+        plt.savefig(f'./figures/{distance}_weight_{weight}_KNN_model.png')
     if show_fig:
         plt.show()
     else:
@@ -152,7 +154,8 @@ def train_knn(
         X_train: pd.DataFrame,
         y_train: pd.DataFrame,
         n_neighbors: int = 5,
-        distance: str = ""
+        distance: str = "",
+        weight: str = 'uniform'
 ) -> KNeighborsRegressor:
     '''
     ### Function that trains K-Nearest-Neighbors model
@@ -160,17 +163,18 @@ def train_knn(
     @param y_train Training vector
     @param n_neighbors Number of neighbors
     @param distance Defines distance used to train model
+    @param weight Defines weight used to train model
     @returns Trained model
     '''
     possible_distances = ['Euclidean', 'Manhattan', 'Canberra', 'Chebyshev', '']
     if distance not in possible_distances:
         raise ValueError(f'Distance metric {distance}, doesn\'t exist!')
 
-    if distance == possible_distances[4]    : knn = KNeighborsRegressor(n_neighbors=n_neighbors)
-    elif distance == possible_distances[0]  : knn = KNeighborsRegressor(n_neighbors=n_neighbors, metric=DistanceMetric.get_metric('euclidean'))
-    elif distance == possible_distances[1]  : knn = KNeighborsRegressor(n_neighbors=n_neighbors, metric=DistanceMetric.get_metric('manhattan'))
-    elif distance == possible_distances[2]  : knn = KNeighborsRegressor(n_neighbors=n_neighbors, metric=DistanceMetric.get_metric('canberra'))
-    elif distance == possible_distances[3]  : knn = KNeighborsRegressor(n_neighbors=n_neighbors, metric=DistanceMetric.get_metric('chebyshev'))
+    if distance == possible_distances[4]    : knn = KNeighborsRegressor(n_neighbors=n_neighbors, metric='minkowski', weights=weight)
+    elif distance == possible_distances[0]  : knn = KNeighborsRegressor(n_neighbors=n_neighbors, metric=DistanceMetric.get_metric('euclidean'), weights=weight)
+    elif distance == possible_distances[1]  : knn = KNeighborsRegressor(n_neighbors=n_neighbors, metric=DistanceMetric.get_metric('manhattan'), weights=weight)
+    elif distance == possible_distances[2]  : knn = KNeighborsRegressor(n_neighbors=n_neighbors, metric=DistanceMetric.get_metric('canberra'), weights=weight)
+    elif distance == possible_distances[3]  : knn = KNeighborsRegressor(n_neighbors=n_neighbors, metric=DistanceMetric.get_metric('chebyshev'), weights=weight)
 
     knn.fit(X_train, y_train)
 
@@ -203,7 +207,8 @@ def stats_(
 def y_true_pred(
         y_true: pd.DataFrame,
         y_pred: pd.DataFrame,
-        save_fig: bool = False
+        save_fig: bool = False,
+        weighted: bool = False
 ) -> None:
     '''
     ### Functiond that visualise accuracy of prediction model
@@ -223,8 +228,10 @@ def y_true_pred(
     plt.ylabel('Predicted y values')
     plt.grid()
 
-    if save_fig:
-        plt.savefig()
+    if save_fig and weighted:
+        plt.savefig('./figures/weighted_y_true_pred.png')
+    elif save_fig and not weighted:
+        plt.savefig('./figures/y_true_pred.png')
     
     plt.show()
     return None
@@ -278,12 +285,20 @@ def zadanie1(file_path: str) -> None:
 
     plt.bar(br1, r2, color ='r', width = bar_width, 
             edgecolor ='grey', label ='R2') 
+    #plt.text(br1, r2, str(r2), color='black', fontsize=10)
+
     plt.bar(br2, rmse, color ='g', width = bar_width, 
             edgecolor ='grey', label ='RMSE') 
+    #plt.text(br2, rmse, str(rmse), color='black', fontsize=10)
+    
     plt.bar(br3, q2, color ='b', width = bar_width, 
-            edgecolor ='grey', label ='q2') 
+            edgecolor ='grey', label ='q2')
+    #plt.text(br3, q2, str(q2), color='black', fontsize=10)
+
     plt.bar(br4, rmse_ex, color ='pink', width = bar_width, 
             edgecolor ='grey', label ='RMSEex')
+    #plt.text(br4, rmse_ex, str(rmse_ex), color='black', fontsize=10)
+
     
     plt.xlabel('Distance metric', fontweight ='bold', fontsize = 15) 
     plt.ylabel('Value', fontweight ='bold', fontsize = 15) 
@@ -301,6 +316,72 @@ def zadanie2(file_path: str) -> None:
     y_train = std_scaler_and_preprocessor(load_data(file_path, sheet_name='y_train'))
     y_test = std_scaler_and_preprocessor(load_data(file_path, sheet_name='y_test'))
 
+    optimal_k, model = optimal_Knum_model(X_train, y_train)
+    print(f'Optimal neighbor #: {optimal_k}')
+
+    y_val_pred = model.predict(X_test)
+    y_train_pred = model.predict(X_train)
+
+    _stats = stats_(y_train, y_train_pred, y_test, y_val_pred)
+    rmse, r2, q2, rmse_ex = _stats[0], _stats[1], _stats[2], _stats[3]
+    print(f'R²: {r2:.4f}')
+    print(f'RMSE: {rmse:.4f}')
+    print(f'Q2: {q2:.4f}')
+    print(f'RMSEex: {rmse_ex:.4f}')
+    y_true_pred(y_test, y_val_pred)
+
+    possible_distances = ['Euclidean', 'Manhattan', 'Canberra', 'Chebyshev']
+    r2 = []
+    q2 = []
+    rmse = []
+    rmse_ex = []
+    optimal_k = []
+
+    for dist in possible_distances:
+        optimal_k_, model = optimal_Knum_model(X_train, y_train, distance=dist, show_fig=False, save_fig=True, weight='distance')
+        y_val_pred = model.predict(X_test)
+        y_train_pred = model.predict(X_train)
+
+        _stats = stats_(y_train, y_train_pred, y_test, y_val_pred)
+        r2.append(_stats[1])
+        q2.append(_stats[2])
+        rmse.append(_stats[0])
+        rmse_ex.append(_stats[3])
+        optimal_k.append(optimal_k_)
+
+    bar_width = 0.15
+    fig = plt.subplots(figsize=(12, 8))
+    
+    br1 = np.arange(len(r2)) 
+    br2 = [x + bar_width for x in br1] 
+    br3 = [x + bar_width + 0.05 for x in br2] 
+    br4 = [x + bar_width for x in br3]
+
+    plt.bar(br1, r2, color ='r', width = bar_width, 
+            edgecolor ='grey', label ='R2') 
+    #plt.text(br1, r2, str(r2), color='black', fontsize=10)
+
+    plt.bar(br2, rmse, color ='g', width = bar_width, 
+            edgecolor ='grey', label ='RMSE') 
+    #plt.text(br2, rmse, str(rmse), color='black', fontsize=10)
+    
+    plt.bar(br3, q2, color ='b', width = bar_width, 
+            edgecolor ='grey', label ='q2')
+    #plt.text(br3, q2, str(q2), color='black', fontsize=10)
+
+    plt.bar(br4, rmse_ex, color ='pink', width = bar_width, 
+            edgecolor ='grey', label ='RMSEex')
+    #plt.text(br4, rmse_ex, str(rmse_ex), color='black', fontsize=10)
+    
+    plt.xlabel('Distance metric', fontweight ='bold', fontsize = 15) 
+    plt.ylabel('Value', fontweight ='bold', fontsize = 15) 
+    plt.xticks([r + bar_width for r in range(len(r2))], 
+            ['Euclidean', 'Manhattan', 'Canberra', 'Chebyshev'])
+    
+    plt.title('Different distance metrics')
+    plt.legend()
+    plt.savefig('./figures/diferent_weighted_distance_stat_comparisson.png')
+    plt.show()
     
 
 
