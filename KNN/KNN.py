@@ -1,31 +1,3 @@
-'''
-TODO:
-    - code review of done things
-    - write readme.md file with instructions how to install, setup and use program
-    - send email
-'''
-
-'''
-TODO:
-    - [x]   Describe what n_split is
-    - [x]   Update data scaler and preprocessor
-    - [ ]   Something is wrong with stats
-            r2 and q2 are the same,
-            rmse and rmse_ex are the same.
-            Find bug and fix it    
-    - [skip??]   Describe why n_splits is set to 6
-    - [x]   Describe N-neighbors parameter and implement distance into training
-    - [x]   Calculate Q2 and RMSEex for normal knn
-    - [x]   Calculate R2, RMSE, Q2, RMSEex for model with different destances. Then plot bar chart of diferent destances
-    - [ ]   Przygotuj analizę ważonego modelu KNN oraz oblicz statystyki R2, RMSE, Q2, RMSEex + wykres y_pred od y_true dla ważonego modelu KNN
-    - [ ]   Statystyki R2, RMSE, Q2, RMSEex dla ważonego modelu z różnymi dystansami:
-            - [ ] Euklides
-            - [ ] Manhattan
-            - [ ] Czebyszew
-            - [ ] Canberra
-            [ ] Następnie przygotuj wykres słupkowy ze statystykami odległości 
-'''
-
 import numpy as np
 import pandas as pd
 from math import nan
@@ -207,6 +179,7 @@ def stats_(
 def y_true_pred(
         y_true: pd.DataFrame,
         y_pred: pd.DataFrame,
+        distance: str,
         save_fig: bool = False,
         weighted: bool = False
 ) -> None:
@@ -225,16 +198,51 @@ def y_true_pred(
     plt.scatter(y_true, y_pred, color='blue')
     plt.plot(y_true, poly1d_fn(y_true), linestyle='--', color='red')
     plt.xlabel('True y values')
-    plt.ylabel('Predicted y values')
-    plt.grid()
+    plt.ylabel('Predicted normalised y values')
+    plt.grid(visible=True, axis='both')
 
     if save_fig and weighted:
-        plt.savefig('./figures/weighted_y_true_pred.png')
+        plt.savefig(f'./figures/weighted_{distance}_y_true_pred.png')
     elif save_fig and not weighted:
-        plt.savefig('./figures/y_true_pred.png')
+        plt.savefig(f'./figures/{distance}_y_true_pred.png')
     
     plt.show()
     return None
+
+def y_true_pred_bar_chart(
+        y_true: pd.DataFrame, 
+        y_pred: pd.DataFrame,
+        weighted: bool,
+        distance: str,
+        show_fig: bool = False,
+        save_fig: bool = False
+    ) -> None:
+    bar_width = 0.15
+    fig = plt.subplots(figsize=(12, 8))
+    
+    br1 = np.arange(len(y_true)) 
+    br2 = [x + bar_width for x in br1] 
+    
+    plt.bar(br1, y_true.ravel(), color ='r', width = bar_width, 
+            edgecolor ='grey', label ='y true') 
+    plt.bar(br2, y_pred.ravel(), color ='g', width = bar_width, 
+            edgecolor ='grey', label ='y pred') 
+    
+    plt.xlabel('y indexes', fontweight ='bold', fontsize = 15) 
+    plt.ylabel('y value', fontweight ='bold', fontsize = 15) 
+    plt.xticks([r + bar_width for r in range(len(y_true))], list(range(len(y_true))))
+    
+    plt.title('y value comparisson')
+    plt.legend()
+
+    if save_fig and weighted:
+        plt.savefig(f'./figures/weighted_{distance}_y_values.png')
+    elif save_fig and not weighted:
+        plt.savefig(f'./figures/{distance}_y_values.png')
+
+    if show_fig:
+        plt.show()
+
 
 def zadanie1(file_path: str) -> None:
     X_train = std_scaler_and_preprocessor(load_data(file_path, sheet_name='X_train'))
@@ -254,7 +262,7 @@ def zadanie1(file_path: str) -> None:
     print(f'RMSE: {rmse:.4f}')
     print(f'Q2: {q2:.4f}')
     print(f'RMSEex: {rmse_ex:.4f}')
-    y_true_pred(y_test, y_val_pred)
+    y_true_pred(y_test, y_val_pred, save_fig=True, distance='Minkowski')
 
     possible_distances = ['Euclidean', 'Manhattan', 'Canberra', 'Chebyshev']
     r2 = []
@@ -274,6 +282,8 @@ def zadanie1(file_path: str) -> None:
         rmse.append(_stats[0])
         rmse_ex.append(_stats[3])
         optimal_k.append(optimal_k_)
+        y_true_pred(y_test, y_val_pred, save_fig=True, distance=dist)
+        y_true_pred_bar_chart(y_test, y_val_pred, weighted=False, show_fig=False, save_fig=True, distance=dist)
 
     bar_width = 0.15
     fig = plt.subplots(figsize=(12, 8))
@@ -328,7 +338,7 @@ def zadanie2(file_path: str) -> None:
     print(f'RMSE: {rmse:.4f}')
     print(f'Q2: {q2:.4f}')
     print(f'RMSEex: {rmse_ex:.4f}')
-    y_true_pred(y_test, y_val_pred)
+    y_true_pred(y_test, y_val_pred, save_fig=True, distance='Minkowski', weighted=True)
 
     possible_distances = ['Euclidean', 'Manhattan', 'Canberra', 'Chebyshev']
     r2 = []
@@ -348,6 +358,8 @@ def zadanie2(file_path: str) -> None:
         rmse.append(_stats[0])
         rmse_ex.append(_stats[3])
         optimal_k.append(optimal_k_)
+        y_true_pred(y_test, y_val_pred, save_fig=True, distance=dist, weighted=True)
+        y_true_pred_bar_chart(y_test, y_val_pred, weighted=True, show_fig=False, save_fig=True, distance=dist)
 
     bar_width = 0.15
     fig = plt.subplots(figsize=(12, 8))
