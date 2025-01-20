@@ -26,7 +26,6 @@
     3. Dokonaj optymalizacji parametrów dwiema metodami (z uzasadnieniem ich wyboru)
     4. Dokonaj interpretacji uzyskanych wyników
 '''
-
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -35,98 +34,116 @@ from sklearn.metrics import confusion_matrix, classification_report, accuracy_sc
 from sklearn.metrics import balanced_accuracy_score
 
 def zadanie1():
+    # Load training and test datasets from Excel file
     X_train = dataLoader('./data/ftalany_klasyfikacja.xlsx', 'X_train')
     y_train = dataLoader('./data/ftalany_klasyfikacja.xlsx', 'y_train')
     X_test = dataLoader('./data/ftalany_klasyfikacja.xlsx', 'X_test')
     y_test = dataLoader('./data/ftalany_klasyfikacja.xlsx', 'y_test')
 
-    # 1. Przygotuj macierz korelacji pomiędzy zmiennymi niezależnymi i zmienną zależną.
-    Xy_matrix = pd.concat([X_train, y_train], axis=1)
-    corr_matrix = correlationMatrix(Xy_matrix)
+    # 1. Create a correlation matrix between independent and dependent variables
+    Xy_matrix = pd.concat([X_train, y_train], axis=1)  # Combine features and labels into one DataFrame
+    corr_matrix = correlationMatrix(Xy_matrix)  # Generate the correlation matrix
     print('Correlation matrix:')
     print(corr_matrix, '\n')
 
-    # 2. Sprawdź czy zbiór testowy i treningowy są zbalansowane.
-    check_balance(y_train, 'treningowy')
+    # 2. Check if the training and test datasets are balanced
+    check_balance(y_train, 'treningowy')  # Check balance for training set
     print()
-    check_balance(y_test, 'testowy')
+    check_balance(y_test, 'testowy')  # Check balance for test set
     print()
 
-    # 3. Zbuduj model drzewa klasyfikacyjnego w celu przewidywania tego parametru
+    # 3. Build and evaluate a decision tree classifier model
     decisionTreeClassifier(X_train, y_train, X_test, y_test)
     
-    # 4. Dokonaj optymalizacji parametrów dwiema metodami (z uzasadnieniem ich wyboru)
+    # 4. Optimize the classifier using two methods
     decisionTreeClassifierOptimization(X_train, y_train, X_test, y_test)
 
-
-def dataLoader(path: str, sheet_name: str) -> pd.DataFrame:
+def dataLoader(
+        path: str, 
+        sheet_name: str
+    ) -> pd.DataFrame:
     '''
-    ### Funkcja do wczytywania danych z pliku Excel z określonego arkusza ###
-    * path: ścieżka do pliku Excel
-    * sheet_name: nazwa arkusza
-    * return: DataFrame z danymi z arkusza
+    ### Function to load data from an Excel sheet ###
+    @param path path to the Excel file
+    @param sheet_name name of the sheet to load
+    @param return DataFrame with data from the specified sheet
     '''
-    data = pd.read_excel(path, sheet_name=sheet_name)
+    data = pd.read_excel(path, sheet_name=sheet_name)  # Read the specified sheet from the Excel file
     return data
 
-def correlationMatrix(data: pd.DataFrame, visualise: bool = True) -> pd.DataFrame:
+def correlationMatrix(
+        data: pd.DataFrame, 
+        visualise: bool = True
+    ) -> pd.DataFrame:
     '''
-    ### Funkcja do tworzenia i wizualizacji macierzy korelacji ###
-    * data: DataFrame z danymi
-    * visualise: flaga określająca czy wyświetlić wykres heatmapy
-    * return: DataFrame z macierzą korelacji
+    ### Function to create and visualize a correlation matrix ###
+    @param data: DataFrame with the data
+    @param visualise: flag to determine whether to display the heatmap
+    @return DataFrame with the correlation matrix
     '''
-    correlation_matrix = data.corr()
+    correlation_matrix = data.corr()  # Compute the correlation matrix
 
     if visualise:
-        # Tworzenie wykresu heatmapy dla macierzy korelacji
+        # Create a heatmap visualization of the correlation matrix
         plt.figure(figsize=(10, 8))
         sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt='.2f', linewidths=0.5, vmin=-1, vmax=1)
         plt.title('Macierz Korelacji')
-        plt.savefig('./DecisionTrees/macierz_korelacji.png')
+        plt.savefig('./DecisionTrees/macierz_korelacji.png')  # Save the plot as an image
         plt.show()
     
-
     return correlation_matrix
 
-def check_balance(y: pd.Series, set_name: str) -> None:
+def check_balance(
+        y: pd.Series, 
+        set_name: str
+    ) -> None:
     '''
-    ### Funkcja sprawdzająca czy zbiór jest zbalansowany ###
-    * y: etykiety zbioru
-    * set_name: nazwa zbioru
+    ### Function to check if a dataset is balanced ###
+    @param y: labels of the dataset
+    @param set_name: name of the dataset (e.g., 'training' or 'test')
+    @return None
     '''
-    counts = y.value_counts(normalize=True)
+    counts = y.value_counts(normalize=True)  # Calculate class distribution as percentages
     print(f"Balans dla {set_name}:")
     print(counts)
-    if counts.min() < 0.4:  # Przykładowy próg
+    if counts.min() < 0.4:  # Example threshold to flag imbalance
         print(f"Uwaga: Zbiór {set_name} jest niezbalansowany!")
     else:
         print(f"Zbiór {set_name} jest zbalansowany.")
 
-def decisionTreeClassifier(X_train: pd.DataFrame, y_train: pd.Series, X_test: pd.DataFrame, y_test: pd.Series) -> None:
+def decisionTreeClassifier(
+        X_train: pd.DataFrame, 
+        y_train: pd.Series, 
+        X_test: pd.DataFrame, 
+        y_test: pd.Series
+    ) -> None:
     '''
-    ### Funkcja do budowy modelu drzewa klasyfikacyjnego i oceny jego zdolności prognostycznych ###
-    * X_train: zbiór treningowy zmiennych niezależnych
-    * y_train: zbiór treningowy etykiet
-    * X_test: zbiór testowy zmiennych niezależnych
-    * y_test: zbiór testowy etykiet
+    ### Function to build and evaluate a decision tree classifier ###
+    @param X_train: training set of independent variables
+    @param y_train: training set labels
+    @param X_test: test set of independent variables
+    @param y_test: test set labels
+    @return None
     '''
-    model = DecisionTreeClassifier(random_state=42)
-    model.fit(X_train, y_train)
+    model = DecisionTreeClassifier(random_state=42)  # Initialize the decision tree model with a fixed random state
+    model.fit(X_train, y_train)  # Train the model
 
-    y_pred = model.predict(X_test)
+    y_pred = model.predict(X_test)  # Predict labels for the test set
 
+    # Generate the confusion matrix
     cm = confusion_matrix(y_test, y_pred)
     print("Macierz pomyłek:")
     print(cm)
 
+    # Calculate various evaluation metrics
     accuracy = accuracy_score(y_test, y_pred)
-    recall = recall_score(y_test, y_pred, average='binary', pos_label=1)
-    specificity = recall_score(y_test, y_pred, average='binary', pos_label=2)
-    precision = precision_score(y_test, y_pred, average='binary', pos_label=1)
-    f1 = f1_score(y_test, y_pred, average='binary', pos_label=1)
-    balanced_error = 1 - balanced_accuracy_score(y_test, y_pred)
+    recall = recall_score(y_test, y_pred, average='binary', pos_label=1)  # Sensitivity (Recall) for class 1
+    specificity = recall_score(y_test, y_pred, average='binary', pos_label=2)  # Specificity for class 2
+    precision = precision_score(y_test, y_pred, average='binary', pos_label=1)  # Precision for class 1
+    f1 = f1_score(y_test, y_pred, average='binary', pos_label=1)  # F1 score for class 1
+    balanced_error = 1 - balanced_accuracy_score(y_test, y_pred)  # Calculate the balanced error rate
 
+    # Print model evaluation statistics
     print("Statystyki modelu:")
     print(f"Dokładność: \t\t{accuracy:.2f}")
     print(f"Czułość (Recall): \t{recall:.2f}")
@@ -136,8 +153,11 @@ def decisionTreeClassifier(X_train: pd.DataFrame, y_train: pd.Series, X_test: pd
     print(f"Zbalansowany błąd: \t{balanced_error:.2f}")
 
 def decisionTreeClassifierOptimization(X_train: pd.DataFrame, y_train: pd.Series, X_test: pd.DataFrame, y_test: pd.Series):
+    '''
+    ### Placeholder function for decision tree optimization ###
+    This function will be implemented to optimize hyperparameters using two methods.
+    '''
     pass
-
 
 if __name__ == '__main__':
     zadanie1()
