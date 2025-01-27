@@ -48,7 +48,7 @@ def optimal_Knum_model(
         X_train: pd.DataFrame, 
         y_train: pd.DataFrame, 
         max_k: int = -1, 
-        n_splits: int = 6,
+        n_splits: int = 3,
         show_fig: bool = True,
         save_fig: bool = False, 
         distance: str = '',
@@ -78,7 +78,7 @@ def optimal_Knum_model(
     rmse_values: list[float] = []
     k_values: list[int] = []
 
-    k = int(np.sqrt(X_train.shape[0]))
+    k = 1
     lowest_rmse = 1
 
 

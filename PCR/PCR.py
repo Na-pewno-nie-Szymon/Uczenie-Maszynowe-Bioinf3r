@@ -98,7 +98,7 @@ def RMSEc(X_train, Y_train):
         rmse_values.append(np.mean(rmse_fold))
     return rmse_values
 
-def MLR(X_train, X_val, Y_train, Y_val):
+def PCR(X_train, X_val, Y_train, Y_val):
     '''
         5. Zbudowanie modelu regresji liniowej dla istotnej liczby głównych składowych
     '''
@@ -132,30 +132,10 @@ def RMSE_plot(rmse_values):
     plt.grid()
     plt.show()
 
-def stats():
-    '''
-        6. Obliczenie R^2 i RMSE oddzielnie dla zbiorów kalibracyjnego i walidacyjnego
-    ''' 
-    pass
-
 if __name__=="__main__":
     '''
         Proszę, krótko zinterpretować wykres i uzyskane wyniki
     '''
-    try:
-        path = sys.argv[1]
-    except IndexError:
-        path = ''
-    finally:
-        if path == '-h' or path == '-help':
-            print('to use this program copy this line:')
-            print('python3 PCR.py [path to data]')
-        else:
-            data = data_loader(path)
-            y, X = data_setter(data)
-            X_pca, explained_variation = PCA_(X_matrix=X)
-            plot_pca_variance(explained_variation)
-            X_train, X_test, Y_train, Y_test = dataset_splitter(X, y)
-            rmse_list = RMSEc(X_train, Y_train)
-            RMSE_plot(rmse_list)
-            MLR(X_train, X_test, Y_train, Y_test)
+    FILE_PATH = './data/dane_leki.xlsx'
+
+    data = data_loader(FILE_PATH)
