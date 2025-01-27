@@ -2,8 +2,8 @@
     Stwórz model klasyfikacyjny metodą wektorów nośnych wg poniższych wytycznych:
     [x] 1 Wczytaj zbiór danych "penguins_size.csv" zawierający 
         charakterystykę trzech gatunków pingwinów 
-    [ ] 2 Wytnij brakujące wartości
-    [ ] 3 Stwórz wykresy pokazujące relację pomiędzy zmiennymi (seaborn, pairplot)
+    [x] 2 Wytnij brakujące wartości
+    [x] 3 Stwórz wykresy pokazujące relację pomiędzy zmiennymi (seaborn, pairplot)
     [ ] 4 Na podstawie wykresów wybierz:
         - dwie cechy oraz dwa gatunki (dwie klasy), dla których
           obiekty są liniowo spreparowane
@@ -29,19 +29,28 @@
 
 import numpy as np
 import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
 
 def data_loader(PATH: str) -> pd.DataFrame:
     data = pd.read_csv(PATH)
     return data
 
 def data_preprocessing(data: pd.DataFrame) -> pd.DataFrame:
-    data = data.drop()
+    data = data.dropna()
     return data
+
+def pairplots(data: pd.DataFrame):
+    sns.pairplot(data=data, hue='species')
+    plt.show()
 
 if __name__=='__main__':
     FILE_PATH = './data/penguins_size.csv'
 
-    data = data_loader(FILE_PATH)
+    # data := [species,island,bill_length_mm,bill_depth_mm,flipper_length_mm,body_mass_g,sex]
+    data = data_preprocessing(data_loader(FILE_PATH))
+    pairplots(data=data)
+
 
     print(type(data), data.shape)
     print(data)
