@@ -1,18 +1,12 @@
 '''
 TODO:
-- review and test each function
-- stats() needs to be done
-- check with .pdf if everything is done and ready to publish
 - write readme.md file with instructions how to install, setup and use program
 - push to git
 - email
 '''
 
-
-
 import pandas as pd
 import numpy as np
-import sys
 import matplotlib.pyplot as plt
 from sklearn.decomposition import PCA
 from sklearn.model_selection import train_test_split, KFold
@@ -60,6 +54,7 @@ def plot_pca_variance(explained_variance):
     plt.title('Wariancja wyjaśniona przez kolejne komponenty PCA')
     plt.legend()
     plt.grid(True)
+    plt.savefig('./figures/PCR/pca_variance.png')
     plt.show()
 
 
@@ -112,13 +107,25 @@ def PCR(X_train, X_val, Y_train, Y_val):
     model = LinearRegression()
     model.fit(X_train_pca, Y_train)
     Y_pred = model.predict(X_val_pca)
+    Y_train_pred = model.predict(X_train_pca)
 
+    # Validation dataset
     rmse = np.sqrt(mean_squared_error(Y_val, Y_pred))
     r2 = r2_score(Y_val, Y_pred)
 
+    print(f'Validation stats')
     print(f'RMSE:   {rmse}')
     print(f'R^2:    {r2}')
-    pass
+    
+    # Trening dataset
+    rmse = np.sqrt(mean_squared_error(Y_train, Y_train_pred))
+    r2 = r2_score(Y_train, Y_train_pred)
+
+    print(f'\nTrening stats')
+    print(f'RMSE:   {rmse}')
+    print(f'R^2:    {r2}')
+
+
 
 def RMSE_plot(rmse_values):
     '''
@@ -130,6 +137,7 @@ def RMSE_plot(rmse_values):
     plt.xlabel('Liczba glownych skladowych')
     plt.ylabel('RMSE')
     plt.grid()
+    plt.savefig('./figures/PCR/RMSE_plot.png')
     plt.show()
 
 if __name__=="__main__":
@@ -137,5 +145,11 @@ if __name__=="__main__":
         Proszę, krótko zinterpretować wykres i uzyskane wyniki
     '''
     FILE_PATH = './data/dane_leki.xlsx'
-
     data = data_loader(FILE_PATH)
+    y, X = data_setter(data)
+    X_pca, explained_variation = PCA_(X_matrix=X)
+    plot_pca_variance(explained_variation)
+    X_train, X_test, Y_train, Y_test = dataset_splitter(X, y)
+    rmse_list = RMSEc(X_train, Y_train)
+    RMSE_plot(rmse_list)
+    PCR(X_train, X_test, Y_train, Y_test)

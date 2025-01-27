@@ -114,7 +114,7 @@ def optimal_Knum_model(
     plt.xticks(k_values)
     plt.grid()
     if save_fig:
-        plt.savefig(f'./figures/{distance}_weight_{weight}_KNN_model.png')
+        plt.savefig(f'./figures/KNN/{distance}_weight_{weight}_KNN_model.png')
     if show_fig:
         plt.show()
     else:
@@ -202,9 +202,9 @@ def y_true_pred(
     plt.grid(visible=True, axis='both')
 
     if save_fig and weighted:
-        plt.savefig(f'./figures/weighted_{distance}_y_true_pred.png')
+        plt.savefig(f'./figures/KNN/weighted_{distance}_y_true_pred.png')
     elif save_fig and not weighted:
-        plt.savefig(f'./figures/{distance}_y_true_pred.png')
+        plt.savefig(f'./figures/KNN/{distance}_y_true_pred.png')
     
     plt.show()
     return None
@@ -236,9 +236,9 @@ def y_true_pred_bar_chart(
     plt.legend()
 
     if save_fig and weighted:
-        plt.savefig(f'./figures/weighted_{distance}_y_values.png')
+        plt.savefig(f'./figures/KNN/weighted_{distance}_y_values.png')
     elif save_fig and not weighted:
-        plt.savefig(f'./figures/{distance}_y_values.png')
+        plt.savefig(f'./figures/KNN/{distance}_y_values.png')
 
     if show_fig:
         plt.show()
@@ -317,7 +317,7 @@ def zadanie1(file_path: str) -> None:
     
     plt.title('Different distance metrics')
     plt.legend()
-    plt.savefig('./figures/diferent_distance_stat_comparisson.png')
+    plt.savefig('./figures/KNN/diferent_distance_stat_comparisson.png')
     plt.show()
 
 def zadanie2(file_path: str) -> None:
@@ -392,7 +392,7 @@ def zadanie2(file_path: str) -> None:
     
     plt.title('Different distance metrics')
     plt.legend()
-    plt.savefig('./figures/diferent_weighted_distance_stat_comparisson.png')
+    plt.savefig('./figures/KNN/diferent_weighted_distance_stat_comparisson.png')
     plt.show()
     
 
