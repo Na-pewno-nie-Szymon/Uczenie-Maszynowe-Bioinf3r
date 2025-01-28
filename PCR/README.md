@@ -8,6 +8,6 @@ Wartość RMSE osiąga najniższy punkt przy trzech głównych składowych. Ozna
 ![pca varince](../figures//PCR/pca_variance.png)
 Wariancja wyjaśniona przez główne składowe przekracza próg 80% przy dwóch komponentach. Oznacza to, że dwie pierwsze składowe główne w pełni wyjaśniają ponad 80% zmienności w danych, co potwierdza ich dominującą rolę w modelu. Dzięki temu możemy zastosować redukcję wymiarów, zachowując jednocześnie większość informacji, co prowadzi do uproszczenia modelu bez utraty jego skuteczności.
 
-# Pozostałe wykrezy znajdują się w folderze /figures
+# Pozostałe wykrezy znajdują się w folderze /figures/PCR
 
 ### Szymon Mirczak
