@@ -15,6 +15,7 @@ Następnie wystarczy w terminalu odpalić
 
 parametr 'file_path' w razie potrzeby należy zmienić w '390' lini kodu
 
+## Wykresy
 ![Different distance Bar Chart](../figures/KNN/diferent_distance_stat_comparisson.png)
 -# porównanie statystyk dla różnych miar odległości w "Klasycznym" KNN
 Widząc, że odległość Manhattan posiada zarówno najwyższy współczynnik R2 oraz Q2 to możemy uznać, że najlepszą miarą odległości dla tego zestawu danych będzie właśnie odległość Manhattan
