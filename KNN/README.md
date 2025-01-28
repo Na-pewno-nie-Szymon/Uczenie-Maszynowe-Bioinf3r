@@ -3,7 +3,7 @@
 ## Uruchomienie programu:
 Przed uruchomieniem programu należy zrobić 2 foldery:
 * Jeden, "./KNN/" w którym należy umieścić program
-* Drugi, "./figures", w którym zapisywane będą wykresy
+* Drugi, "./figures/KNN", w którym zapisywane będą wykresy
 * Oba foldery należy umieścić w jednym miejscu na dysku
 
 Następnie wystarczy w terminalu odpalić
