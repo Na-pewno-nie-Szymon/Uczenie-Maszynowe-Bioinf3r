@@ -33,6 +33,7 @@ from sklearn.svm import SVC
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
+from mlxtend.plotting import plot_decision_regions
 
 def data_loader(PATH: str) -> pd.DataFrame:
     data = pd.read_csv(PATH)
@@ -93,19 +94,24 @@ if __name__=='__main__':
     print(f'Linear Kernel Accuracy: {accuracy_linear:.2f}')
     plot_svm_decision_boundary(svm_linear, X_train, y_train, "Linear Kernel")
     
-    # Modele dla danych nieliniowo separowalnych
-    svm_poly = SVC(kernel='poly')
-    svm_poly.fit(X_train, y_train)
-    y_pred_poly = svm_poly.predict(X_test)
-    accuracy_poly = accuracy_score(y_test, y_pred_poly)
-    
-    svm_rbf = SVC(kernel='rbf')
-    svm_rbf.fit(X_train, y_train)
-    y_pred_rbf = svm_rbf.predict(X_test)
-    accuracy_rbf = accuracy_score(y_test, y_pred_rbf)
-    
-    print(f'Polynomial Kernel Accuracy: {accuracy_poly:.2f}')
-    print(f'RBF Kernel Accuracy: {accuracy_rbf:.2f}')
+    kernels = ['linear', 'poly', 'rbf']
+    for kernel in kernels:
+            svm_model = SVC(kernel=kernel)
+            svm_model.fit(X_train, y_train)
+
+            y_pred = svm_model.predict(X_test)
+
+            print(f'Accuracy ({kernel}, non-separable): {accuracy_score(y_test, y_pred)}')
     
     # Wizualizacja dla jądra liniowego (nieliniowo separowalne dane)
-    plot_svm_decision_boundary(svm_linear, X_train, y_train, "Non-Linearly Separable Data - Linear Kernel")
+    plt.figure()
+
+    plot_decision_regions(X_train, y_train, clf=SVC(kernel='linear').fit(X_train, y_train))
+
+    plt.title("Decision Boundary for Non-linear SVM (Linear Kernel)")
+
+    plt.xlabel("B Length (scaled)")
+
+    plt.ylabel("Body Mass (scaled)")
+
+    plt.show()
